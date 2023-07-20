@@ -3,20 +3,28 @@ package main
 import (
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/routes"
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/middleware"
+	"github.com/Rafael-Sapalo/FullStack-web-application/server/config"
+
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
 	router := gin.Default()
-	router.LoadHTMLGlob("../public/*.html")
+
+	db, err := config.ConnectDB();
+
+	if err != nil {
+		panic(err.Error());
+	}
+	defer db.Close();
 
 	router.GET("/", 
-		middleware.RegiserMiddleware(), 
+		middleware.RegisterMiddleware(), 
 		middleware.RateLimitIndex(), 
 		routes.IndexRoute,
 	)
-	router.POST("/register", middleware.RateLimitRegister(), routes.RegisterRoute)
+	router.POST("/register", routes.RegisterRoute)
 	router.GET("/login", routes.LoginRoute)
 
 	router.Run(":8080")
