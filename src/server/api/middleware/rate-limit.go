@@ -7,13 +7,14 @@ import (
 	"net/http"
 )
 
-var limiter = rate.NewLimiter(rate.Limit(5), 5);
+var limiter = rate.NewLimiter(rate.Limit(5), 15);
+var registerLimiter = rate.NewLimiter(rate.Limit(5), 5);
 
 func RateLimitIndex() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !limiter.Allow() {
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"message": "Too many unsuc requests ",
+				"message": "Too many unsuccessful requests ",
 			})
 			c.Abort()
 			return
