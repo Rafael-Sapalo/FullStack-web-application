@@ -12,7 +12,7 @@ import (
 var secretKey = []byte("bjqooe4nky2i28e1ugehwbom11oyv6erce8");
 
 func LoginRoute(c *gin.Context) {
-	userID := 1;
+	userID := 123;
 	var token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userID": userID,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),

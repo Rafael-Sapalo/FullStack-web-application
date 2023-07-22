@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/middleware"
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/routes"
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/config"
@@ -11,16 +13,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var secretKey = []byte("your-secret-key");
+var secretKey = []byte("your-secret-key")
 
+func attachDB(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("db", db)
+		c.Next()
+	}
+}
 
 func main() {
 
 	router := gin.Default()
-	store := cookie.NewStore([]byte("secret"));
-	router.Use(sessions.Sessions("usersession", store));
+	store := cookie.NewStore([]byte("secret"))
+
+	db, err := config.ConnectDB()
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	router.Use(attachDB(db))
+
+	router.Use(sessions.Sessions("usersession", store))
 
 	router.GET("/", middleware.RateLimitIndex(), routes.IndexRoute)
+	router.GET("/get-all-users", routes.GetAllUsersRoute)
 
 	authRoutes := router.Group("/auth")
 	{
@@ -28,8 +47,8 @@ func main() {
 		authRoutes.POST("/login", routes.LoginRoute)
 		authRoutes.POST("/logout", routes.LogoutRoute) //TODO: ADD logout route
 		authRoutes.GET("/protected", utils.IsAuthenticated, func(ctx *gin.Context) {
-			userID := ctx.MustGet("userID").(int);
-			ctx.JSON(200, gin.H{"message": "This is a protected route", "userID": userID});
+			userID := ctx.MustGet("userID").(int)
+			ctx.JSON(200, gin.H{"message": "This is a protected route", "userID": userID})
 		})
 	}
 	userRoutes := router.Group("/users/:username")
@@ -77,13 +96,6 @@ func main() {
 		messageRoutes.GET("" /*hdl get all message*/)
 		messageRoutes.GET("/:conversationId" /*get conv by id*/)
 	}
-
-	db, err := config.ConnectDB()
-
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
 
 	router.Run(":8080")
 }
