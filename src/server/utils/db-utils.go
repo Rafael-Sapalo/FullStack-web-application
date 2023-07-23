@@ -21,3 +21,18 @@ func IsEmailAlreadyExist(db *sql.DB, email string) (bool, error) {
 	
 	return count > 0, nil;
 }
+
+func IsUsernameAlreadyExist(db *sql.DB, username string) (bool, error) {
+	var qr = "SELECT COUNT(*) FROM users WHERE username = ?";
+	var statement, err = db.Prepare(qr);
+	if err != nil {
+		return false, nil;
+	}
+	defer statement.Close()
+	var count int;
+	err = statement.QueryRow(username).Scan(&count);
+	if err != nil {
+		return false, nil;
+	}
+	return count > 0, nil;
+}

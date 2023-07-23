@@ -10,16 +10,18 @@ import (
 )
 
 func RegisterUser(c *gin.Context, email string, password string, username string) *utils.ErrorMessage {
+	var db = c.MustGet("db").(*sql.DB);
+	var MailExist, MailErr = utils.IsEmailAlreadyExist(db, email);
+	var UserExist, UserErr = utils.IsUsernameAlreadyExist(db, username);
 	var hash, err = utils.HashPass(password);
+
 	if err != nil {
 		return utils.ErrorHashingPassword;
 	}
-	var db = c.MustGet("db").(*sql.DB);
-	var exist, Merr = utils.IsEmailAlreadyExist(db, email);
-	if Merr != nil {
+	if MailErr != nil || UserErr != nil {
 		return utils.ErrInternalServerError;
 	}
-	if exist {
+	if MailExist || UserExist {
 		return utils.ErrorEmailAlrdExists;
 	}
 	var trans, Terr = db.Begin();

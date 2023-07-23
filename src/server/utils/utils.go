@@ -19,7 +19,7 @@ func (er *ErrorMessage) Error() string {
 
 var (
 	ErrInternalServerError = &ErrorMessage{Message: "Internal Server Error", Code: http.StatusInternalServerError}
-	ErrorEmailAlrdExists = &ErrorMessage{Message: "Email already exists", Code: http.StatusConflict}
+	ErrorEmailAlrdExists = &ErrorMessage{Message: "Email already exists or Username already exist", Code: http.StatusConflict}
 	ErrorHashingPassword = &ErrorMessage{Message: "Error hashing password", Code: http.StatusBadRequest}
 	ErrorInsertingUserData = &ErrorMessage{Message: "Error couldn't insert user data", Code: http.StatusInternalServerError}
 	ErrorCommit = &ErrorMessage{Message: "Error couldn't commit the transaction", Code: http.StatusInternalServerError}
@@ -27,4 +27,5 @@ var (
 
 var (
 	SuccessfullyRegistered = &ErrorMessage{Message: "Successfully registered", Code: http.StatusOK}
+	SuccessfullyLoggedIn = &ErrorMessage{Message: "Successfully logged  in", Code: http.StatusOK}
 )
