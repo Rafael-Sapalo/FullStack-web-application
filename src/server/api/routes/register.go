@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,8 +9,8 @@ import (
 )
 
 func RegisterRoute(c *gin.Context) {
-
 	var userData utils.UserData;
+
 	if err := c.ShouldBindJSON(&userData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()});
 		return;
@@ -20,11 +19,8 @@ func RegisterRoute(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing parameters"});
 		return;
 	}
-	userData.Password,_ = utils.HashPass(userData.Password)
-	fmt.Println(userData);
-	if err := utils.RegisterUser(userData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()});
+	if Regerr := RegisterUser(c, userData.Email, userData.Password, userData.Username); Regerr != nil {
+		c.JSON(Regerr.Code, gin.H{"msg": Regerr.Message});
 		return;
 	}
-	c.JSON(http.StatusCreated, gin.H{"status": "register successful"});
 }
