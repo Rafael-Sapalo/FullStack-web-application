@@ -1,8 +1,7 @@
 package utils
 
 type UserData struct {
-	Name string `json:"name"`;
-	FirstName string `json:"firstName"`;
-	Email string `json:"email"`;
-	Password string `json:"password"`;
+	Username string `json:"username"`; // `json:"username"` is a struct tag
+	Email string `json:"email"`; // `json:"email"` is a struct tag
+	Password string `json:"password"`; // `json:"password"` is a struct tag
 }
