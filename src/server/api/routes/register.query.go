@@ -36,5 +36,5 @@ func RegisterUser(c *gin.Context, email string, password string, username string
 	if err := trans.Commit(); err != nil {
 		return utils.ErrorCommit
 	}
-	return utils.SuccessfullyRegistered;
+	return nil;
 }

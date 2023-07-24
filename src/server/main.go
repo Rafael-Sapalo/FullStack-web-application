@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
 
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/middleware"
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/routes"
@@ -25,8 +26,6 @@ func attachDB(db *sql.DB) gin.HandlerFunc {
 func main() {
 
 	router := gin.Default()
-	store := cookie.NewStore([]byte("secret"))
-
 	db, err := config.ConnectDB()
 
 	if err != nil {
@@ -35,8 +34,15 @@ func main() {
 	defer db.Close()
 
 	router.Use(attachDB(db))
-
-	router.Use(sessions.Sessions("usersession", store))
+	store := cookie.NewStore([]byte("secret"))
+	store.Options(sessions.Options{
+		Path: "/src/server",
+		MaxAge: 60 * 60,
+		HttpOnly: true,
+		Secure: true,
+		SameSite: http.SameSiteDefaultMode,
+	})
+	router.Use(sessions.Sessions("UserSession", store))
 
 	router.GET("/", middleware.RateLimitIndex(), routes.IndexRoute)
 	router.GET("/get-all-users", routes.GetAllUsersRoute)
@@ -45,18 +51,25 @@ func main() {
 	{
 		authRoutes.POST("/register", middleware.RegisterMiddleware(), routes.RegisterRoute)
 		authRoutes.POST("/login", routes.LoginRoute)
-		authRoutes.POST("/logout", routes.LogoutRoute) //TODO: ADD logout route
-		authRoutes.GET("/protected", utils.IsAuthenticated, func(ctx *gin.Context) {
-			userID := ctx.MustGet("userID").(int)
-			ctx.JSON(200, gin.H{"message": "This is a protected route", "userID": userID})
+		authRoutes.POST("/logout", routes.LogoutRoute);
+		authRoutes.GET("/protected", func(ctx *gin.Context) {
+			session := sessions.Default(ctx);
+			userId := session.Get("user_id");
+			if userId == nil {
+				ctx.JSON(utils.ErrorUnauthorized.Code, gin.H{"error": "Unauthorized"});
+				return;
+			}
+			ctx.JSON(http.StatusOK, gin.H{"message": userId});
 		})
 	}
 	userRoutes := router.Group("/users/:username")
+	userRoutes.Use(middleware.Authenticate())
 	{
-		userRoutes.GET("" /*hdl profile*/)
-		userRoutes.PUT("/edit-profile")
+		userRoutes.GET("" /*hdl profile*/);//Todo: add basic user route
+		userRoutes.PUT("/edit-profile");//Todo: add edit-profile route
 	}
 	postRoutes := router.Group("/posts")
+	postRoutes.Use(middleware.Authenticate())
 	{
 		postRoutes.GET("" /*hdl get all posts*/)
 		postRoutes.GET("/:postId" /*hdl post by id*/)
@@ -65,6 +78,7 @@ func main() {
 		postRoutes.DELETE("/:postId" /*hdl delete post*/)
 	}
 	commentRoutes := router.Group("/posts/:postId/comments")
+	commentRoutes.Use(middleware.Authenticate())
 	{
 		commentRoutes.GET("" /*hdl get all comments*/)
 		commentRoutes.POST("" /*hdl create comment*/)
@@ -72,11 +86,13 @@ func main() {
 		commentRoutes.DELETE("/:commentId" /*hdl delete comment*/)
 	}
 	likeRoutes := router.Group("/like")
+	likeRoutes.Use(middleware.Authenticate())
 	{
 		likeRoutes.POST("/:postId" /*hdl create like*/)
 		likeRoutes.DELETE("/:postId" /*hdl remove like*/)
 	}
 	var followRoutes = router.Group("/follow/:userId")
+	followRoutes.Use(middleware.Authenticate())
 	{
 		followRoutes.POST("" /*hdl follow user*/)
 		followRoutes.DELETE("" /*hdl unfollow*/)

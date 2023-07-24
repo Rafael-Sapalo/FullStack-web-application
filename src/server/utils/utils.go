@@ -23,6 +23,7 @@ var (
 	ErrorHashingPassword = &ErrorMessage{Message: "Error hashing password", Code: http.StatusBadRequest}
 	ErrorInsertingUserData = &ErrorMessage{Message: "Error couldn't insert user data", Code: http.StatusInternalServerError}
 	ErrorCommit = &ErrorMessage{Message: "Error couldn't commit the transaction", Code: http.StatusInternalServerError}
+	ErrorUnauthorized = &ErrorMessage{Message: "Error Unauthorized", Code: http.StatusUnauthorized}
 )
 
 var (

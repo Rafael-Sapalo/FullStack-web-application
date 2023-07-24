@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Rafael-Sapalo/FullStack-web-application/server/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -30,11 +31,19 @@ func LoginRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "login successful", "token": tokenStr});
 }
 
-func LogoutRoute(c *gin.Context) {
-	
-	session := sessions.Default(c);
+func LogoutRoute(ctx *gin.Context) {
+	var Logs utils.UserData;
+	if err := ctx.ShouldBindJSON(&Logs); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if Logs.Email == "" || Logs.Password == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing params"})
+		return
+	}
+	session := sessions.Default(ctx);
 	session.Clear();
 	session.Save();
 
-	c.JSON(http.StatusOK, gin.H{"status": "logout successful"});
+	ctx.JSON(http.StatusOK, gin.H{"status": "logout successful"});
 }

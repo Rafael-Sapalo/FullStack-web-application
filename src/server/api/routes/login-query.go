@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"database/sql"
+	//"database/sql"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -10,5 +10,5 @@ import (
 )
 
 func LoginUser(c *gin.Context, email string, password string) *utils.ErrorMessage {
-	var db = c.MustGet("db").(*sql.DB);
+	return utils.ErrInternalServerError
 }
