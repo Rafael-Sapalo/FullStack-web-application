@@ -14,7 +14,7 @@ func HashPass(password string) (string, error) {
 	return resHash, err;
 }
 
-func CmpHash(password string, givenpass string) (bool) {
-	var err = bcrypt.CompareHashAndPassword([]byte(password), []byte(givenpass));
+func CmpHash(HashedPassword string, password string) (bool) {
+	var err = bcrypt.CompareHashAndPassword([]byte(HashedPassword), []byte(password));
 	return err == nil;
 }

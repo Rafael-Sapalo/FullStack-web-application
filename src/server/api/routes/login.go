@@ -12,25 +12,6 @@ import (
 
 var secretKey = []byte("bjqooe4nky2i28e1ugehwbom11oyv6erce8");
 
-func LoginRoute(c *gin.Context) {
-	userID := 123;
-	var token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID": userID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	tokenStr, err := token.SignedString(secretKey);
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to generate token"})
-	}
-	session := sessions.Default(c);
-	session.Set("username", "Rafael");
-	session.Save();
-
-	c.Header("Authorization", tokenStr);
-	c.JSON(http.StatusOK, gin.H{"status": "login successful", "token": tokenStr});
-}
-
 func LogoutRoute(ctx *gin.Context) {
 	var Logs utils.UserData;
 	if err := ctx.ShouldBindJSON(&Logs); err != nil {
@@ -41,9 +22,25 @@ func LogoutRoute(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing params"})
 		return
 	}
-	session := sessions.Default(ctx);
-	session.Clear();
-	session.Save();
-
-	ctx.JSON(http.StatusOK, gin.H{"status": "logout successful"});
+	Logged ,LogErr := LoginUser(ctx, Logs.Email, Logs.Password);
+	var UserId, UserErr = GetUserID(ctx, Logs.Email);
+	if UserErr != nil {
+		ctx.JSON(UserErr.Code, gin.H{"msg": UserErr.Message})
+		return;
+	}
+	if LogErr != nil && Logged == false{
+		ctx.JSON(LogErr.Code, gin.H{"msg": LogErr.Message});
+	}
+	if Logged {
+		session := sessions.Default(ctx);
+		session.Set("user_id", UserId)
+		session.Save()
+		
+		var token, TokErr = utils.GenerateToken(UserId);
+		if TokErr != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
+			return;
+		}
+		ctx.JSON(utils.SuccessfullyLoggedIn.Code, gin.H{"token": token})
+	}
 }

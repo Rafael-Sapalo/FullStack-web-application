@@ -29,4 +29,5 @@ var (
 var (
 	SuccessfullyRegistered = &ErrorMessage{Message: "Successfully registered", Code: http.StatusOK}
 	SuccessfullyLoggedIn = &ErrorMessage{Message: "Successfully logged  in", Code: http.StatusOK}
+	IsGoodPassword = &ErrorMessage{Message: "The password provided correspond", Code: http.StatusOK}
 )
