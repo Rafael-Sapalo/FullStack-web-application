@@ -8,38 +8,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var secretKey = []byte("bjqooe4nky2i28e1ugehwbom11oyv6erce8");
+var secretKey = []byte("dkmohiqfoplzzznjdqorjnaoupgicjrurhs")
 
 func GenerateToken(userID int) (string, error) {
-	var Exp = time.Now().Add(24 * time.Hour);
+	var Exp = time.Now().Add(24 * time.Hour)
 	var claim = jwt.MapClaims{
 		"user_id": userID,
-		"exp": Exp.Unix(),
+		"exp":     Exp.Unix(),
 	}
-	var tokenHelper = jwt.NewWithClaims(jwt.SigningMethodES256, claim);
-	var token, err = tokenHelper.SignedString([]byte(secretKey));
+	var tokenHelper = jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	var token, err = tokenHelper.SignedString(secretKey)
 	if err != nil {
-		return "", fmt.Errorf("Cannot generate token %w", err);
+		return "", fmt.Errorf("Cannot generate token %w", err)
 	}
-	return token, nil;
+	return token, nil
 }
 
-func IsAuthenticated(c *gin.Context)  {
-	var tokenStr = c.GetHeader("Authorization");
+func IsAuthenticated(ctx *gin.Context) {
+	var tokenStr = ctx.GetHeader("Authorization")
 
 	if tokenStr == "" {
-		c.JSON(401, gin.H{"error": "Unauthorized"});
-		c.Abort();
-		return;
+		ctx.JSON(401, gin.H{"error": "Unauthorized"})
+		ctx.Abort()
+		return
 	}
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error)  {
-		return secretKey, nil;
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
 	})
 	if err != nil || !token.Valid {
-		c.JSON(401, gin.H{"error": "Unauthorized"});
-		c.Abort();
-		return;
+		ctx.JSON(401, gin.H{"error": "Unauthorized"})
+		ctx.Abort()
+		return
 	}
 
-	c.Next();
+	ctx.Next()
 }

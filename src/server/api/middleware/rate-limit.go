@@ -7,31 +7,45 @@ import (
 	"net/http"
 )
 
-var limiter = rate.NewLimiter(rate.Limit(5), 15);
-var registerLimiter = rate.NewLimiter(rate.Limit(5), 5);
+var limiter = rate.NewLimiter(rate.Limit(5), 15)
+
+var registerLimiter = rate.NewLimiter(rate.Limit(5), 5)
 
 func RateLimitIndex() gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
 		if !limiter.Allow() {
-			c.JSON(http.StatusTooManyRequests, gin.H{
+			ctx.JSON(http.StatusTooManyRequests, gin.H{
 				"message": "Too many unsuccessful requests ",
 			})
-			c.Abort()
+			ctx.Abort()
 			return
 		}
-		c.Next();
+		ctx.Next()
 	}
 }
 
 func RateLimitRegister() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if err := limiter.Wait(c); err != nil {
-			c.JSON(http.StatusTooManyRequests, gin.H{
-				"message" : "Too many unsuccessful requests",
+	return func(ctx *gin.Context) {
+		if err := registerLimiter.Wait(ctx); err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{
+				"message": "Too many unsuccessful requests",
 			})
-			c.Abort();
-			return;
+			ctx.Abort()
+			return
 		}
-		c.Next();
+		ctx.Next()
+	}
+}
+
+func RateLimit() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if err := limiter.Wait(ctx); err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{
+				"message": "Too many request sent",
+			})
+			ctx.Abort()
+			return
+		}
+		ctx.Next()
 	}
 }
