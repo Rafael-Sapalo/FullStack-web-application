@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/middleware"
@@ -14,70 +13,69 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var secretKey = []byte("your-secret-key")
-
-func attachDB(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("db", db)
-		c.Next()
-	}
-}
-
 func main() {
 
-	router := gin.Default()
-	db, err := config.ConnectDB()
-
+	var router = gin.Default()
+	var db, err = config.ConnectDB()
 	if err != nil {
 		panic(err.Error())
 	}
 	defer db.Close()
 
-	router.Use(attachDB(db))
-	store := cookie.NewStore([]byte("secret"))
+	var store = cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
-		Path: "/src/server",
-		MaxAge: 60 * 60,
+		Path:     "/",
+		MaxAge:   60 * 60,
 		HttpOnly: true,
-		Secure: true,
+		Secure:   true,
 		SameSite: http.SameSiteDefaultMode,
 	})
-	router.Use(sessions.Sessions("UserSession", store))
+
+	router.Use(config.AttachDB(db))
+	router.Use(sessions.Sessions("basic", store))
 
 	router.GET("/", middleware.RateLimitIndex(), routes.IndexRoute)
 	router.GET("/get-all-users", routes.GetAllUsersRoute)
 
-	authRoutes := router.Group("/auth")
+	var authRoutes = router.Group("/auth")
+	authRoutes.Use(middleware.RateLimit())
 	{
 		authRoutes.POST("/register", middleware.RegisterMiddleware(), routes.RegisterRoute)
 		authRoutes.POST("/login", routes.LoginRoute)
-		authRoutes.POST("/logout", routes.LogoutRoute);
-		authRoutes.GET("/protected", func(ctx *gin.Context) {
-			session := sessions.Default(ctx);
-			userId := session.Get("user_id");
-			if userId == nil {
-				ctx.JSON(utils.ErrorUnauthorized.Code, gin.H{"error": "Unauthorized"});
-				return;
-			}
-			ctx.JSON(http.StatusOK, gin.H{"message": userId});
-		})
+		authRoutes.GET("/logout", routes.LogoutRoute)
 	}
-	userRoutes := router.Group("/users/:username")
+	var protectedRoutes = router.Group("/protected")
+	protectedRoutes.Use(middleware.IsAdmin, middleware.Authenticate(), middleware.RateLimit())
+	{
+		protectedRoutes.GET("/check-protection", func(ctx *gin.Context) {
+			var session = sessions.Default(ctx)
+			var userID = session.Get("user_id")
+			if userID == nil {
+				ctx.JSON(utils.ErrorUnauthorized.Code, gin.H{"error": utils.ErrorUnauthorized.Message})
+				return
+			}
+			ctx.JSON(http.StatusOK, gin.H{"message": userID})
+		})
+		protectedRoutes.GET("/get-all-users", routes.GetAllUsersRoute)
+	}
+	var userRoutes = router.Group("/users/:username")
 	userRoutes.Use(middleware.Authenticate())
 	{
-		userRoutes.GET("" /*hdl profile*/);//Todo: add basic user route
-		userRoutes.PUT("/edit-profile");//Todo: add edit-profile route
+		userRoutes.GET("" /*hdl profile*/) //Todo: add basic user route
+		userRoutes.PUT("/edit-profile")    //Todo: add edit-profile route
 	}
-	postRoutes := router.Group("/posts")
+	var postRoutes = router.Group("/posts")
 	postRoutes.Use(middleware.Authenticate())
 	{
-		postRoutes.GET("" /*hdl get all posts*/)
+		postRoutes.GET("", func(ctx *gin.Context) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "you have auth"})
+		} /*hdl get all posts*/)
 		postRoutes.GET("/:postId" /*hdl post by id*/)
 		postRoutes.POST("" /*hdl create post*/)
 		postRoutes.PUT("/:postId" /*hdl edit post*/)
 		postRoutes.DELETE("/:postId" /*hdl delete post*/)
 	}
-	commentRoutes := router.Group("/posts/:postId/comments")
+	var commentRoutes = router.Group("/posts/:postId/comments")
 	commentRoutes.Use(middleware.Authenticate())
 	{
 		commentRoutes.GET("" /*hdl get all comments*/)
@@ -85,7 +83,7 @@ func main() {
 		commentRoutes.PUT("/:commentId" /*hdl edit comment*/)
 		commentRoutes.DELETE("/:commentId" /*hdl delete comment*/)
 	}
-	likeRoutes := router.Group("/like")
+	var likeRoutes = router.Group("/like")
 	likeRoutes.Use(middleware.Authenticate())
 	{
 		likeRoutes.POST("/:postId" /*hdl create like*/)
@@ -100,18 +98,24 @@ func main() {
 		followRoutes.GET("/following" /*hdl get all following*/)
 	}
 	var searchRoute = router.Group("/search")
+	searchRoute.Use(middleware.Authenticate())
 	{
 		searchRoute.GET("" /*hdl search*/)
 	}
 	var exploreRoutes = router.Group("/explore")
+	exploreRoutes.Use(middleware.Authenticate())
 	{
 		exploreRoutes.GET("" /*hdl explore*/)
 	}
 	var messageRoutes = router.Group("/messages")
+	messageRoutes.Use(middleware.Authenticate())
 	{
 		messageRoutes.GET("" /*hdl get all message*/)
 		messageRoutes.GET("/:conversationId" /*get conv by id*/)
 	}
 
-	router.Run(":8080")
+	var RunErr = router.Run(":8080")
+	if RunErr != nil {
+		return
+	}
 }

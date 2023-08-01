@@ -9,10 +9,10 @@ import (
 )
 
 type User struct {
-	Id       int
-	Username string
-	Email    string
-	password string
+	Id       int    `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func GetAllUsersRoute(ctx *gin.Context) {
@@ -28,7 +28,7 @@ func GetAllUsersRoute(ctx *gin.Context) {
 
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.Id, &user.Username, &user.Email, &user.password)
+		err := rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error"})
 			return
