@@ -2,6 +2,7 @@ package routes
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/utils"
@@ -49,9 +50,9 @@ func LoginRoute(ctx *gin.Context) {
 		ctx.JSON(LogErr.Code, gin.H{"msg": LogErr.Message})
 	}
 	if Logged {
-		session := sessions.Default(ctx)
+		var session = sessions.Default(ctx)
 		session.Set("user_id", UserId)
-		err := session.Save()
+		var err = session.Save()
 		if err != nil {
 			return
 		}
@@ -60,7 +61,7 @@ func LoginRoute(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
 			return
 		}
-		ctx.Set("user", Logs)
+		fmt.Printf("This is the id logged in %d\n", UserId)
 		ctx.JSON(utils.SuccessfullyLoggedIn.Code, gin.H{"token": token})
 	}
 }

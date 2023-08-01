@@ -29,7 +29,7 @@ func RegisterUser(ctx *gin.Context, userData utils.UserData) *utils.ErrorMessage
 		return utils.ErrInternalServerError
 	}
 	if userData.Role != "admin" {
-		var cmd = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+		var cmd string = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
 		if _, err := trans.Exec(cmd, userData.Username, userData.Email, hash); err != nil {
 			trans.Rollback()
 			return utils.ErrorInsertingUserData

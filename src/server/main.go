@@ -15,23 +15,24 @@ import (
 
 func main() {
 
-	router := gin.Default()
-	db, err := config.ConnectDB()
+	var router = gin.Default()
+	var db, err = config.ConnectDB()
 	if err != nil {
 		panic(err.Error())
 	}
 	defer db.Close()
 
-	router.Use(config.AttachDB(db));
-	store := cookie.NewStore([]byte("secret"))
+	var store = cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
-		Path:     "/src/server",
+		Path:     "/",
 		MaxAge:   60 * 60,
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteDefaultMode,
 	})
-	router.Use(sessions.Sessions("UserSession", store))
+
+	router.Use(config.AttachDB(db))
+	router.Use(sessions.Sessions("basic", store))
 
 	router.GET("/", middleware.RateLimitIndex(), routes.IndexRoute)
 	router.GET("/get-all-users", routes.GetAllUsersRoute)
