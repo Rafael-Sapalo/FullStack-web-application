@@ -4,8 +4,8 @@ import "net/http"
 
 type UserData struct {
 	Username string `json:"username"` // `json:"username"` is a struct tag
-	Email    string `json:"email"`    // `json:"email"` is a struct tag
-	Password string `json:"password"` // `json:"password"` is a struct tag
+	Email    string `json:"email"`
+	Password string `json:"password"`
 	Role     string `json:"role"`
 }
 
@@ -17,6 +17,11 @@ type ErrorMessage struct {
 func (er *ErrorMessage) Error() string {
 	return er.Message
 }
+
+const (
+	BurstLikeRequest int = 1000
+	NbLikeRequest    int = 200
+)
 
 var (
 	ErrInternalServerError = &ErrorMessage{Message: "Internal Server Error", Code: http.StatusInternalServerError}
