@@ -11,6 +11,7 @@ func SetPostsRoutes(postRoutes *gin.RouterGroup) {
 	postRoutes.PUT("/:postID")
 	postRoutes.DELETE("/:postID")
 	SetCommentRoutes(postRoutes.Group("/:postID/comments"))
+	SetLikesRoutes(postRoutes.Group("/like"))
 }
 
 func SetCommentRoutes(comRoutes *gin.RouterGroup) {

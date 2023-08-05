@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+func SetSearchRoutes(searchGrp *gin.RouterGroup) {
+	searchGrp.GET("")
+}
+
+func SetExploreRoute(explRoutes *gin.RouterGroup) {
+	explRoutes.GET("")
+}
+
 func SetUserRoutes(router *gin.Engine) {
 	var userRoutes = router.Group("/user/:username")
 	userRoutes.Use(middleware.Authenticate(), middleware.RateLimit())
@@ -17,6 +25,9 @@ func SetUserRoutes(router *gin.Engine) {
 		userRoutes.GET("")
 		userRoutes.PUT("/edit-profile")
 		SetPostsRoutes(userRoutes.Group("/posts"))
-
+		SetFollowRoutes(userRoutes.Group("/follow/:username"))
+		SetSearchRoutes(userRoutes.Group("/search"))
+		SetExploreRoute(userRoutes.Group("/explore"))
+		SetMessageRoutes(userRoutes.Group("/messages"))
 	}
 }
