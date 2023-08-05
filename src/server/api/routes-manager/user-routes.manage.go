@@ -7,13 +7,6 @@ import (
 	"net/http"
 )
 
-func SetPostsRoutes(postRoutes *gin.RouterGroup) {
-	postRoutes.POST("")
-	postRoutes.GET("/:postID")
-	postRoutes.PUT("/:postID")
-	postRoutes.DELETE("/:postID")
-}
-
 func SetUserRoutes(router *gin.Engine) {
 	var userRoutes = router.Group("/user/:username")
 	userRoutes.Use(middleware.Authenticate(), middleware.RateLimit())
