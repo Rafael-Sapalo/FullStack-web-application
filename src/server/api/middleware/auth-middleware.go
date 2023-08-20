@@ -53,7 +53,6 @@ func IsAdmin(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-
 		ctx.Next()
 	}
 }

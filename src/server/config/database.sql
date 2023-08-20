@@ -121,5 +121,3 @@ ALTER TABLE users ADD COLUMN profile_image LONGBLOB;
 ALTER TABLE users MODIFY COLUMN username VARCHAR(255) NOT NULL UNIQUE;
 
 ALTER TABLE users ADD roles VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (roles IN ('user', 'admin', 'moderator'));
-
-SELECT roles FROM users WHERE id = ?    

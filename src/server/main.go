@@ -1,8 +1,9 @@
 package main
 
 import (
-	routes_manager "github.com/Rafael-Sapalo/FullStack-web-application/server/api/routes-manager"
 	"net/http"
+
+	routes_manager "github.com/Rafael-Sapalo/FullStack-web-application/server/api/routes-manager"
 
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/middleware"
 	"github.com/Rafael-Sapalo/FullStack-web-application/server/api/routes"

@@ -10,7 +10,7 @@ import (
 
 var limiter *rate.Limiter = rate.NewLimiter(rate.Limit(20), 150)
 var LikesLimit *rate.Limiter = rate.NewLimiter(rate.Limit(utils.NbLikeRequest), utils.BurstLikeRequest)
-var registerLimiter *rate.Limiter = rate.NewLimiter(rate.Limit(20), 150)
+var registerLimiter *rate.Limiter = rate.NewLimiter(rate.Limit(utils.NbRegisterRequest), utils.BurstRegisterRequest)
 
 func RateLimitIndex() gin.HandlerFunc {
 	return func(ctx *gin.Context) {

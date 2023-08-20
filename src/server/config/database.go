@@ -11,6 +11,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 func AttachDB(db *sql.DB) gin.HandlerFunc {
@@ -22,6 +23,10 @@ func AttachDB(db *sql.DB) gin.HandlerFunc {
 
 func GetDBsource() any {
 
+	var err = godotenv.Load()
+	if err != nil {
+		fmt.Println(color.With(color.Red, "No env specified or found"))
+	}
 	var dbHost = os.Getenv("DB_HOST")
 	var dbPort = os.Getenv("DB_PORT")
 	var dbUser = os.Getenv("DB_USER")
@@ -32,7 +37,7 @@ func GetDBsource() any {
 		fmt.Println(color.With(color.Red, "Missing database environment variables"))
 		return nil
 	}
-	dbSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
+	var dbSource = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
 	return dbSource
 }
 
@@ -42,10 +47,9 @@ func ConnectDB() (*sql.DB, error) {
 	if dbSource == nil {
 		return nil, nil
 	}
-
-	s := spinner.New(spinner.CharSets[36], 415*time.Millisecond)
-	s.Prefix = "Connecting to the database "
-	s.Start()
+	var sp = spinner.New(spinner.CharSets[36], 415*time.Millisecond)
+	sp.Prefix = "Connecting to the database "
+	sp.Start()
 	db, err := sql.Open("mysql", dbSource.(string))
 
 	if err != nil {
@@ -54,12 +58,12 @@ func ConnectDB() (*sql.DB, error) {
 	err = db.Ping()
 	time.Sleep(5 * time.Second)
 	if err != nil {
-		s.Stop()
+		sp.Stop()
 		fmt.Println(color.With(color.Red, "Failed to connect to the database"))
 		db.Close()
 		return nil, err
 	}
-	s.Stop()
+	sp.Stop()
 	fmt.Println(color.With(color.Green, "Successfully connected to the database"))
 
 	return db, nil

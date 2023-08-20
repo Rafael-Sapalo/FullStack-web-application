@@ -3,7 +3,7 @@ package utils
 import "net/http"
 
 type UserData struct {
-	Username string `json:"username"` // `json:"username"` is a struct tag
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
@@ -18,9 +18,12 @@ func (er *ErrorMessage) Error() string {
 	return er.Message
 }
 
+/*rate limit limiter const*/
 const (
 	BurstLikeRequest int = 1000
 	NbLikeRequest    int = 200
+	BurstRegisterRequest int = 100
+	NbRegisterRequest int = 15
 )
 
 var (

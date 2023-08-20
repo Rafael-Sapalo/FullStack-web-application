@@ -20,7 +20,12 @@ func GetUsersRole(ctx *gin.Context, email string, id int) (string, *utils.ErrorM
 	if TrErr != nil {
 		return "", utils.ErrInternalServerError
 	}
-	defer trans.Rollback()
+	defer func(trans *sql.Tx) {
+		err := trans.Rollback()
+		if err != nil {
+			panic(err)
+		}
+	}(trans)
 	if err := trans.QueryRow(cmd, id).Scan(&role); err != nil {
 		return "", utils.ErrInternalServerError
 	}

@@ -16,7 +16,12 @@ func GetPassword(db *sql.DB, email string) (string, *utils.ErrorMessage) {
 	if TrErr != nil {
 		return "", utils.ErrInternalServerError
 	}
-	defer trans.Rollback()
+	defer func(trans *sql.Tx) {
+		err := trans.Rollback()
+		if err != nil {
+			panic(err)
+		}
+	}(trans)
 	if err := trans.QueryRow(cmd, email).Scan(&password); err != nil {
 		return "", utils.ErrInternalServerError
 	}
